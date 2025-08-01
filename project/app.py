@@ -3,18 +3,19 @@ from flask import Flask, request, jsonify, render_template
 import joblib
 import os
 from textblob import TextBlob
-import spacy
+import re
 
 app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# --- Load All Models (No spaCy needed) ---
 priority_model = joblib.load(os.path.join(BASE_DIR, 'complaint_classifier_model.pkl'))
 priority_vectorizer = joblib.load(os.path.join(BASE_DIR, 'tfidf_vectorizer.pkl'))
 category_model = joblib.load(os.path.join(BASE_DIR, 'category_model.pkl'))
 category_vectorizer = joblib.load(os.path.join(BASE_DIR, 'category_vectorizer.pkl'))
-nlp = spacy.load("en_core_web_sm")
 
+# --- Define All Helper Functions ---
 def analyze_sentiment(complaint_text):
     analysis = TextBlob(complaint_text)
     polarity = analysis.sentiment.polarity
@@ -23,9 +24,14 @@ def analyze_sentiment(complaint_text):
     elif polarity == 0: return "Neutral"
     else: return "Positive"
 
-def extract_key_tokens(complaint_text):
-    doc = nlp(complaint_text)
-    return [token.text for token in doc if token.pos_ in ['NOUN', 'PROPN', 'ADJ'] and not token.is_stop]
+def lightweight_token_extractor(complaint_text):
+    # A simpler way to get important words without a heavy library
+    # This finds words that start with a capital letter (likely nouns)
+    # or common adjectives.
+    blob = TextBlob(complaint_text)
+    # We will grab nouns and adjectives
+    tokens = [word for (word, tag) in blob.tags if tag.startswith('NN') or tag.startswith('JJ')]
+    return list(set(tokens)) # Use set to get unique tokens
 
 def improved_anonymizer(complaint_record):
     if complaint_record.get('Category') == 'Academic':
@@ -37,7 +43,7 @@ def intelligent_priority_scorer(complaint_record):
     complaint_text = complaint_record['Complain']
     anonymized_record = improved_anonymizer(complaint_record)
     detected_emotion = analyze_sentiment(complaint_text)
-    key_tokens = extract_key_tokens(complaint_text)
+    key_tokens = lightweight_token_extractor(complaint_text) # Use the new lightweight function
     priority_score = 0
     base_prediction = {0: 0, 1: 1, 2: 2, 3: 3}[priority_model.predict(priority_vectorizer.transform([complaint_text]))[0]]
     priority_score += base_prediction
