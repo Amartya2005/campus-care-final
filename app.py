@@ -5,11 +5,12 @@ import nltk
 
 # --- Automatic Data Download for TextBlob ---
 # This runs on server startup to make sure the language models are available.
+# This section is now corrected.
 try:
     nltk.data.find('tokenizers/punkt')
     nltk.data.find('corpora/brown')
     nltk.data.find('taggers/averaged_perceptron_tagger')
-except nltk.downloader.DownloadError:
+except Exception: # Using a general Exception is more robust here
     print("Downloading TextBlob corpora...")
     nltk.download('punkt')
     nltk.download('brown')
@@ -31,14 +32,12 @@ def analyze_sentiment(text):
     else: return "Positive"
 
 def extract_key_tokens(text):
-    # TextBlob's noun phrase extraction is a great lightweight alternative to spaCy
     return list(TextBlob(text).noun_phrases)
 
 def intelligent_priority_scorer(record):
     text = record['Complain'].lower()
     score = 0
     
-    # Keyword-based scoring
     high_priority_words = ['leakage', 'not working', 'cancelled', 'delay', 'humiliates', 'harassment', 'safety', 'security', 'fire', 'emergency', 'unacceptable', 'fail', 'error']
     medium_priority_words = ['slow', 'equipment', 'responding', 'processed', 'available']
     
@@ -49,18 +48,15 @@ def intelligent_priority_scorer(record):
     else:
         score += 1
         
-    # Emotion bonus
     emotion = analyze_sentiment(record['Complain'])
     if "Angry" in emotion:
         score += 2
         
-    # Final mapping
     if score >= 5: priority = "Critical"
     elif score >= 3: priority = "High"
     elif score >= 2: priority = "Medium"
     else: priority = "Low"
         
-    # Anonymize academic complaints
     if record.get('Category') == 'Academic':
         record['Anonymous'] = True
         record['Name'] = 'Anonymous'
