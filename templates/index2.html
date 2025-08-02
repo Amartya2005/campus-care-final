@@ -1,126 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CampusCare Help Hub</title>
-  <style>
-    /* Reset & Font */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    /* Background Image */
-    .background { background: url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2128&auto=format&fit=crop'); background-size: cover; background-position: center; filter: blur(5px); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-    /* Centered Content */
-    .container { height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-    /* Card Styling */
-    .card { background-color: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); width: 100%; max-width: 400px; transition: all .3s ease; }
-    .card h1 { font-size: 28px; font-weight: bold; margin-bottom: 15px; }
-    .card p { font-size: 14px; color: #333; margin-bottom: 25px; }
-    .button-group .btn { display: block; margin: 10px 0; padding: 12px; border: 2px solid #00cccc; color: #003f4f; background-color: white; text-decoration: none; border-radius: 10px; font-weight: 600; transition: all .3s ease; cursor: pointer; }
-    .button-group .btn:hover { background-color: black; color: white; border-color: black; }
-    /* Styles for the form and results */
-    .hidden { display: none !important; }
-    .complaint-form input, .complaint-form textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
-    .complaint-form button { width: 100%; padding: 12px; border: none; border-radius: 10px; background-color: black; color: white; font-size: 1rem; font-weight: 600; cursor: pointer; }
-    .loader { border: 6px solid #f3f3f3; border-top: 6px solid #00cccc; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .results-view h2 { text-align: center; }
-  </style>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>CampusCare Help Hub</title>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body,html{height:100%;font-family:'Segoe UI',Tahoma,sans-serif}.background{background:url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2128&auto=format&fit=crop');background-size:cover;background-position:center;filter:blur(5px);position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1}.container{height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}.card{background-color:rgba(255,255,255,0.95);padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.2);width:100%;max-width:400px;transition:all .3s ease}.card h1{font-size:28px;font-weight:700;margin-bottom:15px}.card p{font-size:14px;color:#333;margin-bottom:25px}.button-group .btn{display:block;margin:10px 0;padding:12px;border:2px solid #00cccc;color:#003f4f;background-color:#fff;text-decoration:none;border-radius:10px;font-weight:600;transition:all .3s ease;cursor:pointer}.button-group .btn:hover{background-color:#000;color:#fff;border-color:#000}.hidden{display:none!important}.complaint-form input,.complaint-form textarea{width:100%;padding:12px;margin-bottom:15px;border:1px solid #ccc;border-radius:8px;font-size:1rem}.complaint-form button{width:100%;padding:12px;border:none;border-radius:10px;background-color:#000;color:#fff;font-size:1rem;font-weight:600;cursor:pointer}.loader{border:6px solid #f3f3f3;border-top:6px solid #00cccc;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;margin:20px auto}@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}.results-view h2{text-align:center}</style>
 </head>
 <body>
-  <div class="background"></div>
-  <div class="container">
-    <div class="card" id="main-card">
-      
-      <div id="category-selection">
-        <h1>CampusCare</h1>
-        <p>How can we help you today? Please select a category.</p>
-        <div class="button-group">
-          <a href="#" class="btn" data-category="Administration">Administration</a>
-          <a href="#" class="btn" data-category="Academic">Academic</a>
-          <a href="#" class="btn" data-category="Hostel">Hostel</a>
-        </div>
-      </div>
-      
-      <div id="complaint-form-container" class="hidden">
-        <h2 id="form-title">New Complaint</h2>
-        <form id="complaint-form" class="complaint-form">
-            <input type="hidden" id="category">
-            <input type="text" id="name" placeholder="Full Name" required>
-            <input type="text" id="roll" placeholder="Roll Number" required>
-            <input type="text" id="regd" placeholder="Registration Number" required>
-            <input type="text" id="hostel" placeholder="Hostel Number / Building" required>
-            <textarea id="complain-text" rows="5" placeholder="Please describe your issue..." required></textarea>
-            <button type="submit">Submit for Analysis</button>
-        </form>
-      </div>
-      
-      <div id="loading-view" class="hidden">
-        <h2>Analyzing Complaint...</h2>
-        <div class="loader"></div>
-      </div>
-      
-      <div id="results-view" class="results-view hidden">
-        </div>
-
-    </div>
-  </div>
-
+  <div class="background"></div><div class="container"><div class="card" id="main-card">
+      <div id="category-selection"><h1>CampusCare</h1><p>How can we help you today? Please select a category.</p><div class="button-group"><a href="#" class="btn" data-category="Administration">Administration</a><a href="#" class="btn" data-category="Academic">Academic</a><a href="#" class="btn" data-category="Hostel">Hostel</a></div></div>
+      <div id="complaint-form-container" class="hidden"><h2 id="form-title">New Complaint</h2><form id="complaint-form" class="complaint-form"><input type="hidden" id="category"><input type="text" id="name" placeholder="Full Name" required><input type="text" id="roll" placeholder="Roll Number" required><input type="text" id="regd" placeholder="Registration Number" required><input type="text" id="section" placeholder="Section (e.g., C)" class="hidden"><input type="text" id="hostel" placeholder="Hostel Number / Building" required><textarea id="complain-text" rows="5" placeholder="Please describe your issue..." required></textarea><button type="submit">Submit for Analysis</button></form></div>
+      <div id="loading-view" class="hidden"><h2>Analyzing Complaint...</h2><div class="loader"></div></div>
+      <div id="results-view" class="results-view hidden"></div>
+    </div></div>
   <script>
-    const mainCard = document.getElementById('main-card');
-    const categorySelection = document.getElementById('category-selection');
-    const formContainer = document.getElementById('complaint-form-container');
-    const loadingView = document.getElementById('loading-view');
-    const resultsView = document.getElementById('results-view');
-    const categoryInput = document.getElementById('category');
-    const complaintForm = document.getElementById('complaint-form');
-
-    document.querySelectorAll('.btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const category = button.dataset.category;
-            categoryInput.value = category;
-            document.getElementById('form-title').textContent = `New ${category} Complaint`;
-            categorySelection.classList.add('hidden');
-            formContainer.classList.remove('hidden');
-        });
-    });
-
-    complaintForm.addEventListener('submit', async function(event) {
-        event.preventDefault();
-        formContainer.classList.add('hidden');
-        loadingView.classList.remove('hidden');
-        mainCard.style.textAlign = 'center';
-
-        const complaintData = {
-            'Complain': document.getElementById('complain-text').value,
-            'Name': document.getElementById('name').value, 'Roll': document.getElementById('roll').value,
-            'Regd': document.getElementById('regd').value, 'Hostel': document.getElementById('hostel').value,
-            'Category': categoryInput.value, 'Anonymous': false
-        };
-
-        try {
-            const response = await fetch('/process', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(complaintData)
-            });
-            const results = await response.json();
-            
-            if (results.message === "Success") {
-                loadingView.classList.add('hidden');
-                resultsView.classList.remove('hidden');
-                resultsView.innerHTML = `
-                    <h2>Submission Successful!</h2>
-                    <p>Thank you. Your complaint has been received and is being processed.</p>
-                `;
-            }
-
-        } catch (error) {
-            alert("An error occurred. Please try again.");
-            loadingView.classList.add('hidden');
-            categorySelection.classList.remove('hidden');
-        }
-    });
+    const categorySelection=document.getElementById("category-selection"),formContainer=document.getElementById("complaint-form-container"),loadingView=document.getElementById("loading-view"),resultsView=document.getElementById("results-view"),categoryInput=document.getElementById("category"),complaintForm=document.getElementById("complaint-form"),sectionInput=document.getElementById("section");document.querySelectorAll(".btn").forEach(t=>{t.addEventListener("click",e=>{e.preventDefault();const o=t.dataset.category;categoryInput.value=o,document.getElementById("form-title").textContent=`New ${o} Complaint`,"Academic"===o?sectionInput.classList.remove("hidden"):sectionInput.classList.add("hidden"),categorySelection.classList.add("hidden"),formContainer.classList.remove("hidden")})}),complaintForm.addEventListener("submit",async function(t){t.preventDefault(),formContainer.classList.add("hidden"),loadingView.classList.remove("hidden");const e={Complain:document.getElementById("complain-text").value,Name:document.getElementById("name").value,Roll:document.getElementById("roll").value,Regd:document.getElementById("regd").value,Section:sectionInput.value,Hostel:document.getElementById("hostel").value,Category:categoryInput.value,Anonymous:!1};try{const t=await fetch("/process",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(e)}),o=await t.json();if("Success"===o.message){loadingView.classList.add("hidden"),resultsView.classList.remove("hidden"),resultsView.innerHTML=`<h2>Submission Successful!</h2><p>Thank you. Your complaint has been received and is being processed.</p>`}}catch(t){alert("An error occurred. Please try again."),loadingView.classList.add("hidden"),categorySelection.classList.remove("hidden")}});
   </script>
 </body>
 </html>

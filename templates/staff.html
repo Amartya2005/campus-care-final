@@ -1,13 +1,17 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><title>Staff Dashboard</title><style>body{font-family:'Segoe UI',sans-serif;background-color:#f4f7f6;margin:20px}h1{text-align:center;color:#333}table{width:100%;border-collapse:collapse;margin-top:20px;box-shadow:0 2px 15px rgba(0,0,0,.1);background-color:#fff}th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #ddd}thead{background-color:#007bff;color:#fff}tbody tr:nth-child(even){background-color:#f8f9fa}tbody tr:hover{background-color:#e9ecef}.priority-Critical{background-color:#8B0000!important;color:#fff;font-weight:700}.priority-High{background-color:#dc3545!important;color:#fff}.priority-Medium{background-color:#ffc107;color:#333}</style></head>
-<body><h1>Staff Complaint Dashboard</h1><table id="complaints-table"><thead><tr><th>Priority</th><th>Emotion</th><th>Complaint</th><th>Category</th><th>Submitter</th><th>Key Tokens</th></tr></thead><tbody></tbody></table>
-<script>
-async function fetchComplaints(){try{const t=await fetch("/api/complaints"),e=await t.json(),o=document.querySelector("#complaints-table tbody");o.innerHTML="",e.sort((t,e)=>{const o={Critical:0,High:1,Medium:2,Low:3,"Very Low":4},n=o[t.predicted_priority]??99,a=o[e.predicted_priority]??99;return n-a}),e.forEach(t=>{const e=document.createElement("tr"),n=`priority-${t.predicted_priority.replace(" ","-")}`;e.innerHTML=`
-                    <td class="${n}">${t.predicted_priority}</td>
-                    <td>${t.detected_emotion}</td>
-                    <td>${t.complain_text}</td>
-                    <td>${t.category}</td>
-                    <td>${t.submitter_name} (Roll: ${t.roll_number||"N/A"})</td>
-                    <td>${t.key_tokens}</td>
-                `,o.appendChild(e)})}catch(t){console.error("Failed to fetch complaints:",t)}}window.onload=fetchComplaints,setInterval(fetchComplaints,1e4);
-</script></body></html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Staff Dashboard</title>
+    <style>body{font-family:'Segoe UI',sans-serif;background-color:#121212;color:#e0e0e0;margin:20px}.dashboard-container{max-width:1200px;margin:auto}h1{text-align:center;color:#fff;margin-bottom:40px}.category-section{background-color:#1e1e1e;padding:20px;border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,.4);margin-bottom:30px;border:1px solid #333}.category-section h2{margin-top:0;border-bottom:2px solid;padding-bottom:10px}#academic-section h2{border-color:#4a90e2;color:#4a90e2}#hostel-section h2{border-color:#f5a623;color:#f5a623}#admin-section h2{border-color:#7ed321;color:#7ed321}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #333}thead{background-color:#333;color:#fff}tbody tr:hover{background-color:#2a2a2a}.priority-Critical{background-color:#8B0000!important;color:#fff;font-weight:700}.priority-High{background-color:#dc3545!important;color:#fff}.priority-Medium{background-color:#ffc107;color:#121212}</style>
+</head>
+<body>
+    <div class="dashboard-container"><h1>Staff Complaint Dashboard</h1>
+        <div class="category-section" id="academic-section"><h2>📚 Academic Complaints</h2><table id="academic-table"><thead><tr><th>Priority</th><th>Emotion</th><th>Complaint</th><th>Submitter</th><th>Section</th><th>Complaint Highlights</th></tr></thead><tbody></tbody></table></div>
+        <div class="category-section" id="hostel-section"><h2>🏠 Hostel Complaints</h2><table id="hostel-table"><thead><tr><th>Priority</th><th>Emotion</th><th>Complaint</th><th>Submitter</th><th>Complaint Highlights</th></tr></thead><tbody></tbody></table></div>
+        <div class="category-section" id="admin-section"><h2>🏢 Administration Complaints</h2><table id="admin-table"><thead><tr><th>Priority</th><th>Emotion</th><th>Complaint</th><th>Submitter</th><th>Complaint Highlights</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <script>
+        async function fetchAndCategorizeComplaints(){try{const t=await fetch("/api/complaints"),e=await t.json(),o=document.querySelector("#academic-table tbody"),n=document.querySelector("#hostel-table tbody"),a=document.querySelector("#admin-table tbody");o.innerHTML="",n.innerHTML="",a.innerHTML="",e.sort((t,e)=>{const o={Critical:0,High:1,Medium:2,Low:3};return(o[t.predicted_priority]??99)-(o[e.predicted_priority]??99)}),e.forEach(t=>{const e=document.createElement("tr"),s=`priority-${t.predicted_priority}`;let l=`\n                        <td class="${s}">${t.predicted_priority}</td>\n                        <td>${t.detected_emotion}</td>\n                        <td>${t.complain_text}</td>\n                        <td>${t.submitter_name} (Roll: ${t.roll_number||"N/A"})</td>\n                    `;"Academic"===t.category?(l+=`<td>${t.section||"N/A"}</td>`,l+=`<td>${t.key_tokens}</td>`,e.innerHTML=l,o.appendChild(e)):"Hostel"===t.category?(l+=`<td>${t.key_tokens}</td>`,e.innerHTML=l,n.appendChild(e)):"Administration"===t.category&&(l+=`<td>${t.key_tokens}</td>`,e.innerHTML=l,a.appendChild(e))})}catch(t){console.error("Failed to fetch complaints:",t)}}window.onload=fetchAndCategorizeComplaints,setInterval(fetchAndCategorizeComplaints,1e4);
+    </script>
+</body>
+</html>
