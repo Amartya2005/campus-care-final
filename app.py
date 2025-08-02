@@ -1,28 +1,34 @@
 from flask import Flask, request, jsonify, render_template
 from textblob import TextBlob
 import os
-import nltk
-
-# --- Automatic Data Download for TextBlob ---
-# This runs on server startup to make sure the language models are available.
-# This section is now corrected.
-try:
-    nltk.data.find('tokenizers/punkt')
-    nltk.data.find('corpora/brown')
-    nltk.data.find('taggers/averaged_perceptron_tagger')
-except Exception: # Using a general Exception is more robust here
-    print("Downloading TextBlob corpora...")
-    nltk.download('punkt')
-    nltk.download('brown')
-    nltk.download('averaged_perceptron_tagger')
-    print("Downloads complete.")
+import sqlite3 # Import the database library
 
 app = Flask(__name__)
 
-# --- In-memory "database" ---
-complaints_db = []
+# --- Database Setup ---
+DB_FILE = "complaints.db"
 
-# --- Lightweight Models (No .pkl files or scikit-learn needed) ---
+def init_db():
+    """Creates the database table if it doesn't exist."""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS complaints (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            complain_text TEXT NOT NULL,
+            category TEXT,
+            submitter_name TEXT,
+            roll_number TEXT,
+            predicted_priority TEXT,
+            detected_emotion TEXT,
+            key_tokens TEXT,
+            is_anonymous BOOLEAN
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# --- Lightweight Models ---
 
 def analyze_sentiment(text):
     polarity = TextBlob(text).sentiment.polarity
@@ -41,16 +47,12 @@ def intelligent_priority_scorer(record):
     high_priority_words = ['leakage', 'not working', 'cancelled', 'delay', 'humiliates', 'harassment', 'safety', 'security', 'fire', 'emergency', 'unacceptable', 'fail', 'error']
     medium_priority_words = ['slow', 'equipment', 'responding', 'processed', 'available']
     
-    if any(word in text for word in high_priority_words):
-        score += 3
-    elif any(word in text for word in medium_priority_words):
-        score += 2
-    else:
-        score += 1
+    if any(word in text for word in high_priority_words): score += 3
+    elif any(word in text for word in medium_priority_words): score += 2
+    else: score += 1
         
     emotion = analyze_sentiment(record['Complain'])
-    if "Angry" in emotion:
-        score += 2
+    if "Angry" in emotion: score += 2
         
     if score >= 5: priority = "Critical"
     elif score >= 3: priority = "High"
@@ -77,7 +79,26 @@ def home():
 def process():
     data = request.get_json()
     processed_data = intelligent_priority_scorer(data)
-    complaints_db.append(processed_data)
+    
+    # --- Save to Database ---
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO complaints (complain_text, category, submitter_name, roll_number, predicted_priority, detected_emotion, key_tokens, is_anonymous)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        processed_data['Complain'],
+        processed_data['Category'],
+        processed_data['Name'],
+        processed_data['Roll'],
+        processed_data['Predicted_Priority'],
+        processed_data['Detected_Emotion'],
+        ", ".join(processed_data['Key_Tokens']),
+        processed_data['Anonymous']
+    ))
+    conn.commit()
+    conn.close()
+    
     return jsonify({"message": "Success"})
 
 @app.route('/staff')
@@ -86,7 +107,16 @@ def staff_dashboard():
 
 @app.route('/api/complaints')
 def get_complaints():
-    return jsonify(complaints_db)
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row # This allows us to access columns by name
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM complaints ORDER BY id DESC')
+    complaints = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(complaints)
+
+# --- Initialize Database on Startup ---
+init_db()
 
 if __name__ == '__main__':
     app.run(debug=True)
