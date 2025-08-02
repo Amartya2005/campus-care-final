@@ -1,10 +1,24 @@
 from flask import Flask, request, jsonify, render_template
 from textblob import TextBlob
 import os
+import nltk
+
+# --- Automatic Data Download for TextBlob ---
+# This runs on server startup to make sure the language models are available.
+try:
+    nltk.data.find('tokenizers/punkt')
+    nltk.data.find('corpora/brown')
+    nltk.data.find('taggers/averaged_perceptron_tagger')
+except nltk.downloader.DownloadError:
+    print("Downloading TextBlob corpora...")
+    nltk.download('punkt')
+    nltk.download('brown')
+    nltk.download('averaged_perceptron_tagger')
+    print("Downloads complete.")
 
 app = Flask(__name__)
 
-# In-memory "database" to store complaints
+# --- In-memory "database" ---
 complaints_db = []
 
 # --- Lightweight Models (No .pkl files or scikit-learn needed) ---
@@ -23,38 +37,38 @@ def extract_key_tokens(text):
 def intelligent_priority_scorer(record):
     text = record['Complain'].lower()
     score = 0
-
-    # Keyword-based scoring (replaces the scikit-learn model)
+    
+    # Keyword-based scoring
     high_priority_words = ['leakage', 'not working', 'cancelled', 'delay', 'humiliates', 'harassment', 'safety', 'security', 'fire', 'emergency', 'unacceptable', 'fail', 'error']
     medium_priority_words = ['slow', 'equipment', 'responding', 'processed', 'available']
-
+    
     if any(word in text for word in high_priority_words):
         score += 3
     elif any(word in text for word in medium_priority_words):
         score += 2
     else:
         score += 1
-
+        
     # Emotion bonus
     emotion = analyze_sentiment(record['Complain'])
     if "Angry" in emotion:
         score += 2
-
+        
     # Final mapping
     if score >= 5: priority = "Critical"
     elif score >= 3: priority = "High"
     elif score >= 2: priority = "Medium"
     else: priority = "Low"
-
+        
     # Anonymize academic complaints
     if record.get('Category') == 'Academic':
         record['Anonymous'] = True
         record['Name'] = 'Anonymous'
-
+    
     record['Predicted_Priority'] = priority
     record['Detected_Emotion'] = emotion
     record['Key_Tokens'] = extract_key_tokens(record['Complain'])
-
+    
     return record
 
 # --- Web Routes ---
