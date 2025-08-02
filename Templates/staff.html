@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 20px; }
+        h1 { text-align: center; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); background-color: white; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        thead { background-color: #007bff; color: white; }
+        tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        tbody tr:hover { background-color: #e9ecef; }
+        .priority-Critical { background-color: #8B0000 !important; color: white; font-weight: bold; }
+        .priority-High { background-color: #dc3545 !important; color: white; }
+        .priority-Medium { background-color: #ffc107; color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Staff Complaint Dashboard</h1>
+    <table id="complaints-table">
+        <thead>
+            <tr>
+                <th>Priority</th>
+                <th>Emotion</th>
+                <th>Complaint</th>
+                <th>Category</th>
+                <th>Submitter</th>
+                <th>Key Tokens</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <script>
+        async function fetchComplaints() {
+            try {
+                const response = await fetch('/api/complaints');
+                const complaints = await response.json();
+                const tableBody = document.querySelector("#complaints-table tbody");
+
+                tableBody.innerHTML = ""; // Clear existing data to prevent duplicates
+
+                // Sort complaints so Critical and High are at the top
+                complaints.sort((a, b) => {
+                    const order = { "Critical": 0, "High": 1, "Medium": 2, "Low": 3, "Very Low": 4 };
+                    // Handle cases where a priority might not be in the order map
+                    const priorityA = order[a.Predicted_Priority] ?? 99;
+                    const priorityB = order[b.Predicted_Priority] ?? 99;
+                    return priorityA - priorityB;
+                });
+
+                complaints.forEach(complaint => {
+                    const row = document.createElement('tr');
+                    // Use a class that is valid, replacing spaces
+                    const priorityClass = `priority-${complaint.Predicted_Priority.replace(' ', '-')}`;
+
+                    row.innerHTML = `
+                        <td class="${priorityClass}">${complaint.Predicted_Priority}</td>
+                        <td>${complaint.Detected_Emotion}</td>
+                        <td>${complaint.Complain}</td>
+                        <td>${complaint.Category}</td>
+                        <td>${complaint.Name} (Roll: ${complaint.Roll || 'N/A'})</td>
+                        <td>${(complaint.Key_Tokens || []).join(', ')}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Failed to fetch complaints:", error);
+            }
+        }
+
+        // Fetch data when the page loads
+        window.onload = fetchComplaints;
+
+        // Refresh data every 10 seconds to check for new submissions
+        setInterval(fetchComplaints, 10000);
+    </script>
+</body>
+</html>
